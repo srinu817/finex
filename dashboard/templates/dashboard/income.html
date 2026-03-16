@@ -1,0 +1,35 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>Income</h1>
+
+<h3>Add Income</h3>
+
+<form method="POST">
+{% csrf_token %}
+
+<input type="number" name="amount" placeholder="Amount" required>
+<input type="text" name="source" placeholder="Source" required>
+<input type="date" name="date" required>
+
+<button type="submit">Add Income</button>
+
+</form>
+
+<hr>
+
+<h3>Your Income</h3>
+
+{% for i in incomes %}
+
+<p>₹{{ i.amount }} - {{ i.source }} - {{ i.date }}</p>
+
+{% empty %}
+
+<p>No income added yet</p>
+
+{% endfor %}
+
+{% endblock %}

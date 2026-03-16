@@ -1,0 +1,124 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<style>
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+margin-bottom:25px;
+}
+
+.loan-table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+.loan-table th{
+text-align:left;
+background:#f3f4f6;
+padding:12px;
+}
+
+.loan-table td{
+padding:12px;
+border-bottom:1px solid #eee;
+}
+
+.btn{
+padding:6px 10px;
+border-radius:5px;
+text-decoration:none;
+color:white;
+font-size:13px;
+margin-right:5px;
+}
+
+.btn-edit{
+background:#f39c12;
+}
+
+.btn-delete{
+background:#e74c3c;
+}
+
+.btn-paid{
+background:#27ae60;
+}
+
+</style>
+
+
+<div class="card">
+
+<h2>Loans</h2>
+
+<a href="/add-loan/" class="btn btn-paid">Add Loan</a>
+
+</div>
+
+
+<div class="card">
+
+<table class="loan-table">
+
+<thead>
+<tr>
+<th>Amount</th>
+<th>Person</th>
+<th>Date</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for loan in loans %}
+
+<tr>
+
+<td>₹{{ loan.amount }}</td>
+<td>{{ loan.person }}</td>
+<td>{{ loan.date }}</td>
+<td>{{ loan.status }}</td>
+
+<td>
+
+{% if loan.status == "Pending" %}
+<a href="{% url 'mark_paid' loan.id %}" class="btn btn-paid">
+Paid
+</a>
+{% endif %}
+
+<a href="{% url 'edit_loan' loan.id %}" class="btn btn-edit">
+Edit
+</a>
+
+<a href="{% url 'delete_loan' loan.id %}" class="btn btn-delete">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5">No loans added yet</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

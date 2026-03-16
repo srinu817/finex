@@ -1,0 +1,15 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h2>User Profile</h2>
+
+<div class="card" style="width:300px">
+
+<p><b>Username:</b> {{ request.user.username }}</p>
+
+<p><b>Email:</b> {{ request.user.email }}</p>
+
+</div>
+
+{% endblock %}

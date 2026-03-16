@@ -1,0 +1,31 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+
+<h1>Reports</h1>
+
+<div class="cards">
+
+    <div class="card">
+        <h3>Total Income</h3>
+        <div class="amount">₹{{ total_income }}</div>
+    </div>
+
+    <div class="card">
+        <h3>Total Expenses</h3>
+        <div class="amount">₹{{ total_expense }}</div>
+    </div>
+
+    <div class="card">
+        <h3>Total Loans</h3>
+        <div class="amount">₹{{ total_loan }}</div>
+    </div>
+
+    <div class="card">
+        <h3>Wallet Balance</h3>
+        <div class="amount">₹{{ wallet }}</div>
+    </div>
+
+</div>
+
+{% endblock %}
