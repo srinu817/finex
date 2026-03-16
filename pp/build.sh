@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
-pip install -r requirements.txt
+set -o errexit
+
+cd ..
+
+pip install -r pp/requirements.txt
+
+cd pp
+
 python manage.py collectstatic --noinput
 python manage.py migrate
