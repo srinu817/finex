@@ -53,7 +53,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pp.wsgi.application'
 
 # ✅ DATABASE (ONLY THIS)
-import dj_database_url
+
 import os
 
 DATABASES = {
