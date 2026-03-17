@@ -2,13 +2,80 @@
 
 {% block content %}
 
-<h2>User Profile</h2>
+<style>
 
-<div class="card" style="width:300px">
+.container{
+max-width:500px;
+margin:auto;
+}
 
-<p><b>Username:</b> {{ request.user.username }}</p>
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
 
-<p><b>Email:</b> {{ request.user.email }}</p>
+/* Form */
+.form-group{
+margin-bottom:15px;
+}
+
+.form-group label{
+display:block;
+margin-bottom:5px;
+font-size:14px;
+color:#555;
+}
+
+.form-group input{
+width:100%;
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+}
+
+/* Button */
+.btn{
+background:#3498db;
+color:white;
+border:none;
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+width:100%;
+}
+
+.btn:hover{
+background:#2980b9;
+}
+
+</style>
+
+<div class="container">
+
+<div class="card">
+
+<h2>My Profile</h2>
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="form-group">
+<label>Username</label>
+<input type="text" name="username" value="{{ request.user.username }}">
+</div>
+
+<div class="form-group">
+<label>Email</label>
+<input type="email" name="email" value="{{ request.user.email }}">
+</div>
+
+<button class="btn">Update Profile</button>
+
+</form>
+
+</div>
 
 </div>
 

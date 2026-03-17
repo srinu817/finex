@@ -2,25 +2,241 @@
 
 {% block content %}
 
+<style>
+
+.container{
+max-width:400px;
+margin:auto;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+/* Tabs */
+.tabs{
+display:flex;
+margin-bottom:20px;
+border-bottom:1px solid #ddd;
+}
+
+.tab{
+flex:1;
+text-align:center;
+padding:10px;
+cursor:pointer;
+font-weight:500;
+}
+
+.tab.active{
+border-bottom:3px solid #3498db;
+color:#3498db;
+}
+
+/* Form */
+.form-group{
+margin-bottom:15px;
+}
+
+.form-group input{
+width:100%;
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+}
+
+/* Buttons */
+.btn{
+width:100%;
+padding:10px;
+border:none;
+border-radius:6px;
+background:#3498db;
+color:white;
+cursor:pointer;
+margin-top:10px;
+}
+
+.btn:hover{
+background:#2980b9;
+}
+
+.btn-otp{
+background:#2ecc71;
+}
+
+.btn-otp:hover{
+background:#27ae60;
+}
+
+/* Hide */
+.hidden{
+display:none;
+}
+
+.error{
+color:red;
+text-align:center;
+margin-bottom:10px;
+}
+
+.footer{
+text-align:center;
+margin-top:15px;
+}
+
+.info{
+font-size:13px;
+text-align:center;
+color:#555;
+margin-top:5px;
+}
+
+.remember{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+margin-top:10px;
+font-size:14px;
+}
+
+/* 🔥 Fix checkbox alignment */
+.remember input[type="checkbox"]{
+width:16px;
+height:16px;
+cursor:pointer;
+margin:0;
+}
+
+/* 🔥 Fix label alignment */
+.remember label{
+margin:0;
+cursor:pointer;
+line-height:16px;
+}
+
+</style>
+
+<div class="container">
+
+<div class="card">
+
 <h2>Login</h2>
 
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+<!-- Tabs -->
+<div class="tabs">
+<div class="tab active" onclick="showTab('password', event)">Password</div>
+<div class="tab" onclick="showTab('otp', event)">OTP</div>
+</div>
+
+<!-- 🔐 PASSWORD LOGIN -->
+<div id="password">
+
 <form method="POST">
-    {% csrf_token %}
+{% csrf_token %}
 
-    <label>Username</label>
-    <input type="text" name="username" required>
+<div class="form-group">
+<input type="text" name="username" placeholder="Username or Email" required>
+</div>
 
-    <br><br>
+<div class="form-group">
+<input type="password" name="password" placeholder="Password" required>
+</div>
 
-    <label>Password</label>
-    <input type="password" name="password" required>
+<!-- 🔥 REMEMBER ME -->
+<div class="remember">
+<input type="checkbox" name="remember_me" id="remember_me">
+<label for="remember_me">Remember Me</label>
+</div>
 
-    <br><br>
-
-    <button type="submit">Login</button>
+<button class="btn">Login</button>
 
 </form>
 
+</div>
+.remember{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+margin-top:10px;
+font-size:14px;
+}
+
+<!-- 🔥 OTP LOGIN -->
+<div id="otp" class="hidden">
+
+<!-- Send OTP -->
+<form method="POST" action="{% url 'otp_login' %}" onsubmit="setEmail()">
+{% csrf_token %}
+
+<div class="form-group">
+<input type="email" id="otp_email" name="email" placeholder="Enter Email" required>
+</div>
+
+<button class="btn btn-otp">Send OTP</button>
+
+</form>
+
+<p class="info">OTP will be sent to your email</p>
+
+<br>
+
+<!-- Verify OTP -->
+<form method="POST" action="{% url 'verify_otp' %}">
+{% csrf_token %}
+
+<input type="hidden" name="email" id="hidden_email">
+
+<div class="form-group">
+<input type="text" name="otp" placeholder="Enter OTP" required>
+</div>
+
+<button class="btn">Verify & Login</button>
+
+</form>
+
+</div>
+
+<div class="footer">
 <p>Don't have account? <a href="/signup/">Signup</a></p>
+</div>
+
+</div>
+
+</div>
+
+<!-- 🔥 JS -->
+<script>
+
+function showTab(tab, event){
+    document.getElementById('password').classList.add('hidden');
+    document.getElementById('otp').classList.add('hidden');
+
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+    document.getElementById(tab).classList.remove('hidden');
+    event.target.classList.add('active');
+}
+
+function setEmail(){
+    let email = document.getElementById("otp_email").value;
+    document.getElementById("hidden_email").value = email;
+}
+
+</script>
 
 {% endblock %}

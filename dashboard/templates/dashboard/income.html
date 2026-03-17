@@ -1,35 +1,204 @@
 {% extends 'dashboard/base.html' %}
-{% load static %}
 
 {% block content %}
 
+<style>
+
+.page-header{
+margin-bottom:25px;
+}
+
+.page-header h1{
+font-size:28px;
+margin-bottom:5px;
+}
+
+.dashboard-grid{
+display:grid;
+grid-template-columns:320px 1fr;
+gap:25px;
+}
+
+/* Mobile */
+@media(max-width:768px){
+.dashboard-grid{
+grid-template-columns:1fr;
+}
+}
+
+/* Card */
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Form */
+
+.form-group{
+display:flex;
+flex-direction:column;
+margin-bottom:15px;
+}
+
+.form-group input{
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+}
+
+/* Buttons */
+
+.btn-primary{
+background:#3498db;
+border:none;
+padding:10px;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
+.btn-primary:hover{
+background:#2980b9;
+}
+
+.btn-delete{
+background:#e74c3c;
+border:none;
+padding:6px 10px;
+border-radius:5px;
+color:white;
+cursor:pointer;
+font-size:12px;
+}
+
+/* Table */
+
+.table-wrapper{
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+background:#f3f4f6;
+padding:12px;
+text-align:left;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #eee;
+}
+
+.amount{
+font-weight:bold;
+color:#2c3e50;
+}
+
+.empty{
+text-align:center;
+padding:20px;
+color:#999;
+}
+
+</style>
+
+
+<div class="page-header">
 <h1>Income</h1>
+</div>
+
+
+<div class="dashboard-grid">
+
+<!-- Add Income -->
+
+<div class="card">
 
 <h3>Add Income</h3>
 
 <form method="POST">
 {% csrf_token %}
 
+<div class="form-group">
 <input type="number" name="amount" placeholder="Amount" required>
-<input type="text" name="source" placeholder="Source" required>
-<input type="date" name="date" required>
+</div>
 
-<button type="submit">Add Income</button>
+<div class="form-group">
+<input type="text" name="source" placeholder="Source" required>
+</div>
+
+<div class="form-group">
+<input type="date" name="date" required>
+</div>
+
+<button class="btn-primary">Add Income</button>
 
 </form>
 
-<hr>
+</div>
+
+
+<!-- Income Table -->
+
+<div class="card">
 
 <h3>Your Income</h3>
 
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+<tr>
+<th>Amount</th>
+<th>Source</th>
+<th>Date</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
 {% for i in incomes %}
 
-<p>₹{{ i.amount }} - {{ i.source }} - {{ i.date }}</p>
+<tr>
+<td class="amount">₹{{ i.amount }}</td>
+<td>{{ i.source }}</td>
+<td>{{ i.date }}</td>
+
+<td>
+<form method="POST" action="{% url 'delete_income' i.id %}">
+{% csrf_token %}
+<button class="btn-delete">Delete</button>
+</form>
+</td>
+
+</tr>
 
 {% empty %}
 
-<p>No income added yet</p>
+<tr>
+<td colspan="4" class="empty">No income added yet</td>
+</tr>
 
 {% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
 
 {% endblock %}

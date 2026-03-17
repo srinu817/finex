@@ -2,29 +2,132 @@
 
 {% block content %}
 
+<style>
+
+/* Cards */
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
+margin-bottom:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+text-align:center;
+}
+
+.amount{
+font-size:20px;
+font-weight:bold;
+}
+
+/* Table */
+.table-wrapper{
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#f3f4f6;
+padding:12px;
+text-align:left;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #eee;
+}
+
+/* Buttons */
+.btn{
+padding:8px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+color:white;
+margin-right:10px;
+}
+
+.btn-mail{ background:#3498db; }
+.btn-download{ background:#27ae60; }
+
+</style>
+
 <h1>Reports</h1>
 
+<!-- Cards -->
 <div class="cards">
 
-    <div class="card">
-        <h3>Total Income</h3>
-        <div class="amount">₹{{ total_income }}</div>
-    </div>
+<div class="card">
+<h3>Income</h3>
+<div class="amount">₹{{ total_income }}</div>
+</div>
 
-    <div class="card">
-        <h3>Total Expenses</h3>
-        <div class="amount">₹{{ total_expense }}</div>
-    </div>
+<div class="card">
+<h3>Expenses</h3>
+<div class="amount">₹{{ total_expense }}</div>
+</div>
 
-    <div class="card">
-        <h3>Total Loans</h3>
-        <div class="amount">₹{{ total_loan }}</div>
-    </div>
+<div class="card">
+<h3>Loans</h3>
+<div class="amount">₹{{ total_loan }}</div>
+</div>
 
-    <div class="card">
-        <h3>Wallet Balance</h3>
-        <div class="amount">₹{{ wallet }}</div>
-    </div>
+<div class="card">
+<h3>Wallet</h3>
+<div class="amount">₹{{ wallet }}</div>
+</div>
+
+</div>
+
+<!-- Buttons -->
+<form method="POST">
+{% csrf_token %}
+<button name="send_email" class="btn btn-mail">Send Email 📧</button>
+<button name="download" class="btn btn-download">Download 📥</button>
+</form>
+
+<hr>
+
+<h2>Monthly Report</h2>
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+<tr>
+<th>Month</th>
+<th>Income</th>
+<th>Expense</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for e in monthly_expenses %}
+<tr>
+<td>{{ e.month_name }}</td>
+<td>₹{{ e.income }}</td>
+<td>₹{{ e.total }}</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="3">No data available</td>
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
 
 </div>
 

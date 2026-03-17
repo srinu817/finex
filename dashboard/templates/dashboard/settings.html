@@ -1,46 +1,74 @@
-{% load static %}
+{% extends 'dashboard/base.html' %}
 
-<!DOCTYPE html>
-<html>
-<head>
+{% block content %}
 
-<title>Settings</title>
+<style>
 
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+.container{
+max-width:500px;
+margin:auto;
+}
 
-</head>
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
 
-<body>
+.form-group{
+margin-bottom:15px;
+}
 
-<div class="sidebar">
+.form-group input{
+width:100%;
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+}
 
-<h2>Finance</h2>
+.btn{
+background:#2ecc71;
+color:white;
+border:none;
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+width:100%;
+}
 
-<ul>
+.btn-danger{
+background:#e74c3c;
+margin-top:10px;
+}
 
-<li><a href="/">Dashboard</a></li>
-<li><a href="/profile/">Profile</a></li>
-<li><a href="/settings/">Settings</a></li>
+</style>
 
-</ul>
-
-</div>
-
-<div class="main">
-
-<h1>Settings</h1>
+<div class="container">
 
 <div class="card">
 
-<p>Theme: Light</p>
+<h2>Settings</h2>
 
-<p>Email Notifications: ON</p>
+<form method="POST">
+{% csrf_token %}
 
-<p>Currency: INR</p>
+<div class="form-group">
+<label>Change Password</label>
+<input type="password" name="password" placeholder="New Password">
+</div>
+
+<button class="btn">Update Password</button>
+
+</form>
+
+<form method="POST" action="{% url 'delete_account' %}">
+{% csrf_token %}
+<button class="btn btn-danger">Delete Account</button>
+</form>
 
 </div>
 
 </div>
 
-</body>
-</html>
+{% endblock %}

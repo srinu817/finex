@@ -4,12 +4,38 @@
 
 <style>
 
+.page-header{
+margin-bottom:20px;
+}
+
+/* Card */
 .card{
 background:white;
 padding:25px;
 border-radius:10px;
 box-shadow:0 4px 10px rgba(0,0,0,0.08);
 margin-bottom:25px;
+}
+
+/* Button */
+.btn{
+padding:6px 10px;
+border-radius:5px;
+text-decoration:none;
+color:white;
+font-size:13px;
+margin-right:5px;
+border:none;
+cursor:pointer;
+}
+
+.btn-edit{ background:#f39c12; }
+.btn-delete{ background:#e74c3c; }
+.btn-paid{ background:#27ae60; }
+
+/* Table */
+.table-wrapper{
+overflow-x:auto;
 }
 
 .loan-table{
@@ -29,40 +55,25 @@ padding:12px;
 border-bottom:1px solid #eee;
 }
 
-.btn{
-padding:6px 10px;
-border-radius:5px;
-text-decoration:none;
-color:white;
-font-size:13px;
-margin-right:5px;
-}
-
-.btn-edit{
-background:#f39c12;
-}
-
-.btn-delete{
-background:#e74c3c;
-}
-
-.btn-paid{
-background:#27ae60;
+.empty{
+text-align:center;
+padding:20px;
+color:#999;
 }
 
 </style>
 
-
-<div class="card">
-
+<div class="page-header">
 <h2>Loans</h2>
-
-<a href="/add-loan/" class="btn btn-paid">Add Loan</a>
-
 </div>
 
+<div class="card">
+<a href="{% url 'add_loan' %}" class="btn btn-paid">Add Loan</a>
+</div>
 
 <div class="card">
+
+<div class="table-wrapper">
 
 <table class="loan-table">
 
@@ -90,18 +101,15 @@ background:#27ae60;
 <td>
 
 {% if loan.status == "Pending" %}
-<a href="{% url 'mark_paid' loan.id %}" class="btn btn-paid">
-Paid
-</a>
+<a href="{% url 'mark_paid' loan.id %}" class="btn btn-paid">Paid</a>
 {% endif %}
 
-<a href="{% url 'edit_loan' loan.id %}" class="btn btn-edit">
-Edit
-</a>
+<a href="{% url 'edit_loan' loan.id %}" class="btn btn-edit">Edit</a>
 
-<a href="{% url 'delete_loan' loan.id %}" class="btn btn-delete">
-Delete
-</a>
+<form method="POST" action="{% url 'delete_loan' loan.id %}" style="display:inline;">
+{% csrf_token %}
+<button class="btn btn-delete">Delete</button>
+</form>
 
 </td>
 
@@ -110,7 +118,7 @@ Delete
 {% empty %}
 
 <tr>
-<td colspan="5">No loans added yet</td>
+<td colspan="5" class="empty">No loans added yet</td>
 </tr>
 
 {% endfor %}
@@ -118,6 +126,8 @@ Delete
 </tbody>
 
 </table>
+
+</div>
 
 </div>
 

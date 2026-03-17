@@ -44,3 +44,8 @@ class Loan(models.Model):
     )
         def __str__(self):
          return self.person
+        
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
