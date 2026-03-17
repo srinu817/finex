@@ -59,21 +59,41 @@ def login_view(request):
 
     return render(request, "dashboard/login.html")
 
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+from django.contrib import messages
+from django.shortcuts import render, redirect
 
 def signup_view(request):
     if request.method == "POST":
 
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        # 🔥 validation
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists ❌")
+            return redirect("signup")
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already registered ❌")
+            return redirect("signup")
+
+        # ✅ create user
         user = User.objects.create_user(
-            username=request.POST["username"],
-            email=request.POST["email"],
-            password=request.POST["password"]
+            username=username,
+            email=email,
+            password=password
         )
 
         # ✅ auto login
         login(request, user)
 
-        # 📧 mail
+        # 📧 send mail
         send_user_mail(user, "Welcome 🎉", "Your account created successfully!")
+
+        messages.success(request, "Account created successfully 🎉")
 
         return redirect("/dashboard/")
 
