@@ -6,36 +6,38 @@ from django.db.models import Sum
 from django.db.models.functions import ExtractMonth
 from django.conf import settings
 from django.core.mail import send_mail
+from django.contrib import messages
 
-from .models import Expense, Income, Loan
+from .models import Expense, Income, Loan, OTP
 from .forms import LoanForm
 
 import calendar
+import random
 
 
-# 🔥 COMMON MAIL FUNCTION
+# 🔥 FINAL MAIL FUNCTION (SendGrid Ready)
 def send_user_mail(user, subject, message):
     if user.email:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [user.email],
-            fail_silently=True,
-        )
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,  # ✅ IMPORTANT
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print("MAIL ERROR:", e)
 
 
 # ========================= AUTH ========================= #
 
 def login_view(request):
-
     if request.method == "POST":
-
         username = request.POST.get("username")
         password = request.POST.get("password")
         remember_me = request.POST.get("remember_me")
 
-        # 🔥 email login support
         try:
             user_obj = User.objects.get(email=username)
             username = user_obj.username
@@ -47,24 +49,17 @@ def login_view(request):
         if user:
             login(request, user)
 
-            # 🔥 Remember Me Logic
             if not remember_me:
-                request.session.set_expiry(0)  # logout on browser close
+                request.session.set_expiry(0)
             else:
-                request.session.set_expiry(1209600)  # 2 weeks
+                request.session.set_expiry(1209600)
 
-            return redirect("/dashboard/")
+            return redirect("dashboard")
         else:
             return render(request, "dashboard/login.html", {"error": "Invalid credentials"})
 
     return render(request, "dashboard/login.html")
 
-from django.contrib.auth.models import User
-from django.contrib.auth import login
-from django.contrib import messages
-from django.shortcuts import render, redirect
-
-from django.contrib import messages
 
 def signup_view(request):
     if request.method == "POST":
@@ -73,7 +68,10 @@ def signup_view(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        # 🔥 validation
+        if not username or not email or not password:
+            messages.error(request, "All fields are required ❌")
+            return redirect("signup")
+
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists ❌")
             return redirect("signup")
@@ -83,26 +81,26 @@ def signup_view(request):
             return redirect("signup")
 
         try:
-            # ✅ create user
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
 
-            # ✅ auto login
             login(request, user)
 
-            # 📧 send mail (SAFE)
-            send_user_mail(user, "Welcome 🎉", "Your account created successfully!")
+            send_user_mail(
+                user,
+                "Welcome to Finex 🎉",
+                "Your account created successfully!"
+            )
 
             messages.success(request, "Account created successfully 🎉")
-
-            return redirect("/dashboard/")
+            return redirect("dashboard")
 
         except Exception as e:
             print("SIGNUP ERROR:", e)
-            messages.error(request, "Something went wrong. Try again ❌")
+            messages.error(request, "Something went wrong ❌")
             return redirect("signup")
 
     return render(request, "dashboard/signup.html")
@@ -110,14 +108,13 @@ def signup_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("/login/")
+    return redirect("login")
 
 
 # ========================= DASHBOARD ========================= #
 
 @login_required
 def dashboard_view(request):
-
     total_income = Income.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
     total_expense = Expense.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
     total_loan = Loan.objects.filter(user=request.user).aggregate(Sum('amount'))['amount__sum'] or 0
@@ -136,7 +133,6 @@ def dashboard_view(request):
 
 @login_required
 def expenses_view(request):
-
     if request.method == "POST":
         expense = Expense.objects.create(
             user=request.user,
@@ -145,11 +141,7 @@ def expenses_view(request):
             date=request.POST["date"]
         )
 
-        send_user_mail(
-            request.user,
-            "Expense Added",
-            f"₹{expense.amount} added under {expense.category}"
-        )
+        send_user_mail(request.user, "Expense Added", f"₹{expense.amount} added under {expense.category}")
 
         return redirect("expenses")
 
@@ -161,11 +153,7 @@ def expenses_view(request):
 def delete_expense(request, id):
     exp = get_object_or_404(Expense, id=id, user=request.user)
 
-    send_user_mail(
-        request.user,
-        "Expense Deleted",
-        f"Deleted ₹{exp.amount} from {exp.category}"
-    )
+    send_user_mail(request.user, "Expense Deleted", f"Deleted ₹{exp.amount} from {exp.category}")
 
     exp.delete()
     return redirect("expenses")
@@ -175,7 +163,6 @@ def delete_expense(request, id):
 
 @login_required
 def income_view(request):
-
     if request.method == "POST":
         income = Income.objects.create(
             user=request.user,
@@ -184,11 +171,7 @@ def income_view(request):
             date=request.POST["date"]
         )
 
-        send_user_mail(
-            request.user,
-            "Income Added",
-            f"₹{income.amount} added from {income.source}"
-        )
+        send_user_mail(request.user, "Income Added", f"₹{income.amount} added from {income.source}")
 
         return redirect("income")
 
@@ -200,11 +183,7 @@ def income_view(request):
 def delete_income(request, id):
     inc = get_object_or_404(Income, id=id, user=request.user)
 
-    send_user_mail(
-        request.user,
-        "Income Deleted",
-        f"Deleted ₹{inc.amount} from {inc.source}"
-    )
+    send_user_mail(request.user, "Income Deleted", f"Deleted ₹{inc.amount} from {inc.source}")
 
     inc.delete()
     return redirect("income")
@@ -227,11 +206,7 @@ def add_loan(request):
         loan.user = request.user
         loan.save()
 
-        send_user_mail(
-            request.user,
-            "Loan Added",
-            f"Loan ₹{loan.amount} added"
-        )
+        send_user_mail(request.user, "Loan Added", f"Loan ₹{loan.amount} added")
 
         return redirect("loans")
 
@@ -242,11 +217,7 @@ def add_loan(request):
 def delete_loan(request, id):
     loan = get_object_or_404(Loan, id=id, user=request.user)
 
-    send_user_mail(
-        request.user,
-        "Loan Deleted",
-        f"Deleted loan ₹{loan.amount}"
-    )
+    send_user_mail(request.user, "Loan Deleted", f"Deleted loan ₹{loan.amount}")
 
     loan.delete()
     return redirect("loans")
@@ -258,11 +229,7 @@ def mark_paid(request, loan_id):
     loan.status = "Paid"
     loan.save()
 
-    send_user_mail(
-        request.user,
-        "Loan Paid",
-        f"Loan ₹{loan.amount} marked as Paid"
-    )
+    send_user_mail(request.user, "Loan Paid", f"Loan ₹{loan.amount} marked as Paid")
 
     return redirect("loans")
 
@@ -271,7 +238,6 @@ def mark_paid(request, loan_id):
 
 @login_required
 def reports(request):
-
     monthly_expenses = list(
         Expense.objects.filter(user=request.user)
         .annotate(month=ExtractMonth('date'))
@@ -300,7 +266,6 @@ def reports(request):
     total_expense = sum(i['total'] for i in monthly_expenses)
     wallet = total_income - total_expense
 
-    # 📧 report mail
     if request.method == "POST":
         send_user_mail(
             request.user,
@@ -312,32 +277,29 @@ def reports(request):
         "monthly_expenses": monthly_expenses,
         "total_income": total_income,
         "total_expense": total_expense,
-        "total_loan": 0,
         "wallet": wallet
     })
+
+
+# ========================= PROFILE ========================= #
+
 @login_required
 def profile_view(request):
-
     if request.method == "POST":
         user = request.user
-
         user.username = request.POST.get("username")
         user.email = request.POST.get("email")
         user.save()
 
-        send_user_mail(
-            user,
-            "Profile Updated",
-            "Your profile details were updated successfully"
-        )
+        send_user_mail(user, "Profile Updated", "Your profile updated successfully")
 
         return redirect("profile")
 
     return render(request, "dashboard/profile.html")
 
+
 @login_required
 def settings_view(request):
-
     if request.method == "POST":
         password = request.POST.get("password")
 
@@ -346,35 +308,26 @@ def settings_view(request):
             user.set_password(password)
             user.save()
 
-            send_user_mail(
-                user,
-                "Password Changed",
-                "Your password has been updated"
-            )
+            send_user_mail(user, "Password Changed", "Your password updated")
 
-            return redirect("/login/")
+            return redirect("login")
 
     return render(request, "dashboard/settings.html")
+
+
 @login_required
 def delete_account(request):
-
     user = request.user
 
-    send_user_mail(
-        user,
-        "Account Deleted",
-        "Your account has been removed successfully"
-    )
+    send_user_mail(user, "Account Deleted", "Your account removed")
 
     user.delete()
-    return redirect("/signup/")
-    
-import random
-from .models import OTP
+    return redirect("signup")
 
+
+# ========================= OTP ========================= #
 
 def otp_login(request):
-
     if request.method == "POST":
         email = request.POST.get("email")
 
@@ -384,7 +337,6 @@ def otp_login(request):
             return render(request, "dashboard/otp.html", {"error": "User not found"})
 
         otp = str(random.randint(100000, 999999))
-
         OTP.objects.create(user=user, otp=otp)
 
         send_user_mail(user, "Your OTP", f"Your OTP is {otp}")
@@ -392,10 +344,10 @@ def otp_login(request):
         return render(request, "dashboard/verify_otp.html", {"email": email})
 
     return render(request, "dashboard/login.html")
+
+
 def verify_otp(request):
-
     if request.method == "POST":
-
         email = request.POST.get("email")
         otp_input = request.POST.get("otp")
 
@@ -404,7 +356,7 @@ def verify_otp(request):
 
         if otp_obj and otp_obj.otp == otp_input:
             login(request, user)
-            return redirect("/dashboard/")
+            return redirect("dashboard")
         else:
             return render(request, "dashboard/verify_otp.html", {
                 "error": "Invalid OTP",
