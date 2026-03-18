@@ -64,6 +64,8 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.shortcuts import render, redirect
 
+from django.contrib import messages
+
 def signup_view(request):
     if request.method == "POST":
 
@@ -80,22 +82,28 @@ def signup_view(request):
             messages.error(request, "Email already registered ❌")
             return redirect("signup")
 
-        # ✅ create user
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password
-        )
+        try:
+            # ✅ create user
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
 
-        # ✅ auto login
-        login(request, user)
+            # ✅ auto login
+            login(request, user)
 
-        # 📧 send mail
-        send_user_mail(user, "Welcome 🎉", "Your account created successfully!")
+            # 📧 send mail (SAFE)
+            send_user_mail(user, "Welcome 🎉", "Your account created successfully!")
 
-        messages.success(request, "Account created successfully 🎉")
+            messages.success(request, "Account created successfully 🎉")
 
-        return redirect("/dashboard/")
+            return redirect("/dashboard/")
+
+        except Exception as e:
+            print("SIGNUP ERROR:", e)
+            messages.error(request, "Something went wrong. Try again ❌")
+            return redirect("signup")
 
     return render(request, "dashboard/signup.html")
 
